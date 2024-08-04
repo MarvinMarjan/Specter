@@ -12,10 +12,10 @@ namespace Specter.Debug;
 /// </summary>
 public static class Log
 {
-	public static void FullscreenError(Exception exception)
-	{
-		TerminalStream.ClearAllScreen();
-		Console.Write(ControlCodes.CursorToHome());
-		Console.WriteLine(exception.ToString());
-	}
+    public static void FullscreenError(Exception exception)
+    {
+        TerminalStream.ClearAllScreen();
+        Console.Write(ControlCodes.CursorToHome());
+        Console.WriteLine(exception.ToString());
+    }
 }

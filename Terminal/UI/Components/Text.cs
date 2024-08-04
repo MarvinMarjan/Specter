@@ -14,64 +14,64 @@ namespace Specter.Terminal.UI.Components;
 /// </summary>
 public class TextComponent : Component, IChildLess
 {
-	public ComponentProperty<string> Text { get; }
+    public ComponentProperty<string> Text { get; }
 
 
-	public TextComponent(
-		string name,
+    public TextComponent(
+        string name,
 
-		Component? parent,
-		Point? position = null,
+        Component? parent,
+        Point? position = null,
 
-		Alignment? alignment = null,
-		
-		ColorObject? color = null,
+        Alignment? alignment = null,
 
-		bool inheritProperties = false,
+        ColorObject? color = null,
 
-		string text = ""
+        bool inheritProperties = false,
 
-
-		// * size is set in Update()
-	) : base(name, parent, position, null, alignment, color, inheritProperties)
-	{
-		Text = new(
-			this, "Text", text,
-			
-			new(
-				updateOnChange: true,
-				requestOwnerRenderOnPropertyChange: true,
-				drawAllRequest: true
-			)
-		);
-	}
+        string text = ""
 
 
-	/// <returns> A Size object based on Text. </returns>
-	protected Size SizeFromText() => new((uint)Text.Value.Length, 1);
+    // * size is set in Update()
+    ) : base(name, parent, position, null, alignment, color, inheritProperties)
+    {
+        Text = new(
+            this, "Text", text,
+
+            new(
+                updateOnChange: true,
+                requestOwnerRenderOnPropertyChange: true,
+                drawAllRequest: true
+            )
+        );
+    }
 
 
-	public override string Draw()
-	{
-		StringBuilder builder = new();
-
-		builder.Append(ControlCodes.CursorTo(RelativePosition.Row, RelativePosition.Col));
-		builder.Append(Color.Value.AsSequence());
-
-		builder.Append(Text);
-
-		builder.Append(EscapeCodes.Reset);
+    /// <returns> A Size object based on Text. </returns>
+    protected Size SizeFromText() => new((uint)Text.Value.Length, 1);
 
 
-		builder.Append(base.Draw());
+    public override string Draw()
+    {
+        StringBuilder builder = new();
 
-		return builder.ToString();
-	}
+        builder.Append(ControlCodes.CursorTo(RelativePosition.Row, RelativePosition.Col));
+        builder.Append(Color.Value.AsSequence());
 
-	public override void Update()
-	{
-		Size.DefaultValue = SizeFromText();
+        builder.Append(Text);
 
-		base.Update();
-	}
+        builder.Append(EscapeCodes.Reset);
+
+
+        builder.Append(base.Draw());
+
+        return builder.ToString();
+    }
+
+    public override void Update()
+    {
+        Size.DefaultValue = SizeFromText();
+
+        base.Update();
+    }
 }

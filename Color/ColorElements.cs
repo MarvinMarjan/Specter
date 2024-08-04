@@ -10,8 +10,8 @@ namespace Specter.Color;
 /// </summary>
 public enum ColorLayer
 {
-	Foreground = 38,
-	Background = 48
+    Foreground = 38,
+    Background = 48
 }
 
 
@@ -21,20 +21,20 @@ public enum ColorLayer
 /// <param name="code"> The color code. </param>
 public class ColorCodeElement(Color16? code = null) : IANSISequenceElement
 {
-	public Color16? Code { get; set; } = code;
+    public Color16? Code { get; set; } = code;
 
 
-	public bool IsValid() => Code is not null;
+    public bool IsValid() => Code is not null;
 
-	public string BuildSequence()
-	{
-		int? intCode = (int?)Code;
+    public string BuildSequence()
+    {
+        int? intCode = (int?)Code;
 
-		return intCode?.ToString() ?? string.Empty;
-	}
+        return intCode?.ToString() ?? string.Empty;
+    }
 
 
-	public static implicit operator ColorCodeElement(Color16 code) => new(code);
+    public static implicit operator ColorCodeElement(Color16 code) => new(code);
 }
 
 
@@ -47,26 +47,26 @@ public class ColorCodeElement(Color16? code = null) : IANSISequenceElement
 /// <param name="layer"> The layer of the element. </param>
 public class Color256Element(byte? code = null, ColorLayer layer = ColorLayer.Foreground) : IANSISequenceElement
 {
-	public byte? Code { get; set; } = code;
-	public ColorLayer Layer { get; set; } = layer;
+    public byte? Code { get; set; } = code;
+    public ColorLayer Layer { get; set; } = layer;
 
 
-	public bool IsValid() => Code is not null;
+    public bool IsValid() => Code is not null;
 
-	public string BuildSequence()
-	{
-		if (!IsValid())
-			return string.Empty;
+    public string BuildSequence()
+    {
+        if (!IsValid())
+            return string.Empty;
 
-		int layerCode = (int)Layer;
+        int layerCode = (int)Layer;
 
-		return SequenceBuilder.BuildANSIEscapeSequence([
-			layerCode.ToString(), EscapeCodes.Color256TypeCode.ToString(), Code.ToString()
-		], false);
-	}
+        return SequenceBuilder.BuildANSIEscapeSequence([
+            layerCode.ToString(), EscapeCodes.Color256TypeCode.ToString(), Code.ToString()
+        ], false);
+    }
 
 
-	public static implicit operator Color256Element(byte code) => new(code);
+    public static implicit operator Color256Element(byte code) => new(code);
 }
 
 
@@ -77,30 +77,30 @@ public class Color256Element(byte? code = null, ColorLayer layer = ColorLayer.Fo
 /// <param name="layer"> The layer of the element. </param>
 public class ColorRGBElement(ColorRGB? color = null, ColorLayer layer = ColorLayer.Foreground) : IANSISequenceElement
 {
-	public ColorRGB? Color { get; set; } = color;
-	public ColorLayer Layer { get; set; } = layer;
+    public ColorRGB? Color { get; set; } = color;
+    public ColorLayer Layer { get; set; } = layer;
 
 
-	public bool IsValid() => Color is not null;
+    public bool IsValid() => Color is not null;
 
-	public string BuildSequence()
-	{
-		if (!IsValid())
-			return string.Empty;
+    public string BuildSequence()
+    {
+        if (!IsValid())
+            return string.Empty;
 
-		int layerCode = (int)Layer;
+        int layerCode = (int)Layer;
 
-		var validColor = Color ?? new ColorRGB();
+        var validColor = Color ?? new ColorRGB();
 
-		if (!validColor.AreAllChannelsNull())
-			validColor.SetValueToNullChannels(0);
+        if (!validColor.AreAllChannelsNull())
+            validColor.SetValueToNullChannels(0);
 
-		return SequenceBuilder.BuildANSIEscapeSequence([
-			layerCode.ToString(), EscapeCodes.ColorRGBTypeCode.ToString(),
-			validColor.Red?.ToString(), validColor.Green?.ToString(), validColor.Blue?.ToString()
-		], false);
-	}
+        return SequenceBuilder.BuildANSIEscapeSequence([
+            layerCode.ToString(), EscapeCodes.ColorRGBTypeCode.ToString(),
+            validColor.Red?.ToString(), validColor.Green?.ToString(), validColor.Blue?.ToString()
+        ], false);
+    }
 
 
-	public static implicit operator ColorRGBElement(ColorRGB color) => new(color);
+    public static implicit operator ColorRGBElement(ColorRGB color) => new(color);
 }

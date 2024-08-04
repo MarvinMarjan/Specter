@@ -8,20 +8,20 @@
 /// </summary>
 public class RootComponent : SectionComponent
 {
-	public RootComponent() : base("Root",null, drawBorder: false)
-	{
-		PropertiesManager.Requirement.CanBeInherited = false;
-	}
+    public RootComponent() : base("Root", null, drawBorder: false)
+    {
+        PropertiesManager.Requirement.CanBeInherited = false;
+    }
 
 
-	public override void Update()
-	{
-		// * setting the Size before updating the base (consequently, updating the childs)
-		// * is needed to avoid drawing issues when the terminal gets resized.
+    public override void Update()
+    {
+        // * setting the Size before updating the base (consequently, updating the childs)
+        // * is needed to avoid drawing issues when the terminal gets resized.
 
-		if (TerminalAttributes.TerminalResized)
-			Size.DefaultValue = TerminalAttributes.TerminalSize;
-		
-		base.Update();
-	}
+        if (TerminalAttributes.TerminalResized)
+            Size.DefaultValue = TerminalAttributes.TerminalSize;
+
+        base.Update();
+    }
 }
