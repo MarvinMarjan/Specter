@@ -4,30 +4,59 @@ using System;
 namespace Specter.Terminal.UI;
 
 
+public struct TerminalUnit
+{
+    private int _value;
+    public int Value
+    {
+        readonly get => _value;
+        set
+        {
+            if (value >= 0)
+                _value = value;
+            else
+                throw new InvalidOperationException(@"A ""TerminalUnit"" value is not allowed to be negative.");
+        }
+    }
+
+
+    public TerminalUnit(int value)
+    {
+        Value = value;
+    }
+
+
+    public static implicit operator TerminalUnit(int value) => new(value);
+    public static implicit operator int(TerminalUnit value) => value.Value;
+}
+
+
 /// <summary>
 /// Represents a point in the terminal.
 /// </summary>
 /// <param name="row"> The row position. </param>
 /// <param name="col"> The column position. </param>
-public struct Point(uint row, uint col)
+public struct Point(int row, int col)
 {
     public static Point None { get => new(0, 0); }
 
-    public uint Row { get; set; } = row;
-    public uint Col { get; set; } = col;
+
+    public TerminalUnit Row { get; set; } = row;
+    public TerminalUnit Column { get; set; } = col;
+
 
 
     public static Point operator +(Point left, Point right)
-        => new(left.Row + right.Row, left.Col + right.Col);
+        => new(left.Row + right.Row, left.Column + right.Column);
 
     public static Point operator -(Point left, Point right)
-        => new(left.Row - right.Row, left.Col - right.Col);
+        => new(left.Row - right.Row, left.Column - right.Column);
 
     public static Point operator *(Point left, Point right)
-        => new(left.Row * right.Row, left.Col * right.Col);
+        => new(left.Row * right.Row, left.Column * right.Column);
 
     public static Point operator /(Point left, Point right)
-        => new(left.Row / right.Row, left.Col / right.Col);
+        => new(left.Row / right.Row, left.Column / right.Column);
 
 
     public static bool operator ==(Point left, Point right)
@@ -37,16 +66,16 @@ public struct Point(uint row, uint col)
         => !left.Equals(right);
 
 
-    public readonly override int GetHashCode() => (Row, Col).GetHashCode();
+    public readonly override int GetHashCode() => (Row, Column).GetHashCode();
 
     public readonly override bool Equals(object? obj)
         => obj is Point point && Equals(point);
 
-    public readonly bool Equals(Point obj) => Row == obj.Row && Col == obj.Col;
+    public readonly bool Equals(Point obj) => Row == obj.Row && Column == obj.Column;
 
 
     public override readonly string ToString()
-        => $"Pos(row: {Row}, col: {Col})";
+        => $"Pos(row: {Row}, col: {Column})";
 }
 
 
@@ -55,12 +84,14 @@ public struct Point(uint row, uint col)
 /// </summary>
 /// <param name="width"> The width. </param>
 /// <param name="height"> The height. </param>
-public struct Size(uint width, uint height) : IEquatable<Size>
+public struct Size(int width, int height)
 {
+
     public static Size None { get => new(0, 0); }
 
-    public uint Width { get; set; } = width;
-    public uint Height { get; set; } = height;
+
+    public TerminalUnit Width { get; set; } = width;
+    public TerminalUnit Height { get; set; } = height;
 
 
     public static Size operator +(Size left, Size right)
@@ -115,12 +146,12 @@ public struct Rect(Point position, Size size)
 /// <param name="left"> The left. </param>
 /// <param name="bottom"> The bottom. </param>
 /// <param name="right"> The right. </param>
-public struct Bounds(uint top, uint left, uint bottom, uint right)
+public struct Bounds(int top, int left, int bottom, int right)
 {
-    public uint Top { get; set; } = top;
-    public uint Left { get; set; } = left;
-    public uint Bottom { get; set; } = bottom;
-    public uint Right { get; set; } = right;
+    public TerminalUnit Top { get; set; } = top;
+    public TerminalUnit Left { get; set; } = left;
+    public TerminalUnit Bottom { get; set; } = bottom;
+    public TerminalUnit Right { get; set; } = right;
 
 
     [Flags]
@@ -141,7 +172,7 @@ public struct Bounds(uint top, uint left, uint bottom, uint right)
 
 
     public static Bounds FromRectangle(Point position, Size size)
-        => new(position.Row, position.Col, position.Row + size.Height - 1, position.Col + size.Width - 1);
+        => new(position.Row, position.Column, position.Row + size.Height - 1, position.Column + size.Width - 1);
 
 
     public static bool HasEdgeInEdges(Edge edges, Edge edge)
@@ -149,8 +180,8 @@ public struct Bounds(uint top, uint left, uint bottom, uint right)
 
 
     public readonly bool IsAtBorder(Point point)
-        => (point.Row == Top || point.Row == Bottom) && point.Col >= Left && point.Col <= Right ||
-            (point.Col == Left || point.Col == Right) && point.Row >= Top && point.Row <= Bottom;
+        => (point.Row == Top || point.Row == Bottom) && point.Column >= Left && point.Column <= Right ||
+            (point.Column == Left || point.Column == Right) && point.Row >= Top && point.Row <= Bottom;
 
 
     public readonly bool IsAtBorder(Point point, out Edge edges)
@@ -165,8 +196,8 @@ public struct Bounds(uint top, uint left, uint bottom, uint right)
 
         edges |= point.Row == Top ? Edge.Top : 0;
         edges |= point.Row == Bottom ? Edge.Bottom : 0;
-        edges |= point.Col == Left ? Edge.Left : 0;
-        edges |= point.Col == Right ? Edge.Right : 0;
+        edges |= point.Column == Left ? Edge.Left : 0;
+        edges |= point.Column == Right ? Edge.Right : 0;
 
         return true;
     }

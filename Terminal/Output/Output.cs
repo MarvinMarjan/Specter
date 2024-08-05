@@ -17,8 +17,11 @@ public static class TerminalStream
     {
         value ??= "";
 
-        if (WriteToPinned(value))
+        if (s_pinned is not null)
+        {
+            WriteToPinned(value);
             return;
+        }
 
         if (newLine)
             Console.WriteLine(value.ToString());
@@ -31,14 +34,8 @@ public static class TerminalStream
 
 
 
-    private static bool WriteToPinned(object value)
-    {
-        if (s_pinned is null)
-            return false;
-
-        s_pinned.Write(value.ToString() ?? "");
-        return true;
-    }
+    private static void WriteToPinned(object value)
+        => s_pinned?.Write(value.ToString() ?? "");
 
 
 
@@ -72,7 +69,7 @@ public static class TerminalStream
     {
         Write(new string('\n', count));
         Point cursorPos = TerminalAttributes.CursorPosition;
-        cursorPos.Row -= (uint)count;
+        cursorPos.Row -= count;
 
         TerminalAttributes.CursorPosition = cursorPos;
 

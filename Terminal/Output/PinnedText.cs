@@ -70,12 +70,13 @@ public class PinnedText(string text, Point position) : IDrawable
     {
         StringBuilder builder = new();
 
-        builder.Append(ControlCodes.CursorTo(Position.Row, Position.Col));
+        builder.Append(ControlCodes.CursorTo(Position.Row, Position.Column));
 
+        // TODO: test this some day
         if (EraseOnDraw)
         {
             builder.Append(GetEraseString());
-            builder.Append(ControlCodes.CursorTo(Position.Row, Position.Col));
+            builder.Append(ControlCodes.CursorTo(Position.Row, Position.Column));
         }
 
         builder.Append(Text);

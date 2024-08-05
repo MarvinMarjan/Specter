@@ -71,8 +71,6 @@ public abstract class Component : IUpdateable, IDrawable
 
     public event UpdateEventHandler? UpdateEvent;
 
-    protected void RaiseUpdateEvent() => UpdateEvent?.Invoke();
-
 
 
     public Component(
@@ -234,7 +232,7 @@ public abstract class Component : IUpdateable, IDrawable
         Position.DefaultValue = Alignment.Value.CalculatePosition(this);
         PropertiesManager.Update();
 
-        RaiseUpdateEvent();
+        UpdateEvent?.Invoke();
 
         foreach (Component child in Childs)
             child.Update();

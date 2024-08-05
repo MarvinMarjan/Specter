@@ -28,5 +28,6 @@ public struct ColorRGB(byte? r = null, byte? g = null, byte? b = null)
         Blue ??= value;
     }
 
-    public void SetAll(byte? value) => Red = Green = Blue = value;
+    public void SetAll(byte? value)
+        => Red = Green = Blue = value;
 }

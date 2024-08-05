@@ -19,19 +19,15 @@ public enum ColorLayer
 /// A color element for Color16.
 /// </summary>
 /// <param name="code"> The color code. </param>
-public class ColorCodeElement(Color16? code = null) : IANSISequenceElement
+public class ColorCodeElement(Color16? code = null) : SequenceElement
 {
     public Color16? Code { get; set; } = code;
 
 
-    public bool IsValid() => Code is not null;
+    public override bool IsValid() => Code is not null;
 
-    public string BuildSequence()
-    {
-        int? intCode = (int?)Code;
-
-        return intCode?.ToString() ?? string.Empty;
-    }
+    protected override string BuildSequence()
+        => ((int)Code!).ToString();
 
 
     public static implicit operator ColorCodeElement(Color16 code) => new(code);
@@ -45,26 +41,19 @@ public class ColorCodeElement(Color16? code = null) : IANSISequenceElement
 /// </summary>
 /// <param name="code"> The 8-bit color code. </param>
 /// <param name="layer"> The layer of the element. </param>
-public class Color256Element(byte? code = null, ColorLayer layer = ColorLayer.Foreground) : IANSISequenceElement
+public class Color256Element(byte? code = null, ColorLayer layer = ColorLayer.Foreground) : SequenceElement
 {
     public byte? Code { get; set; } = code;
     public ColorLayer Layer { get; set; } = layer;
 
 
-    public bool IsValid() => Code is not null;
+    public override bool IsValid() => Code is not null;
 
-    public string BuildSequence()
-    {
-        if (!IsValid())
-            return string.Empty;
-
-        int layerCode = (int)Layer;
-
-        return SequenceBuilder.BuildANSIEscapeSequence([
-            layerCode.ToString(), EscapeCodes.Color256TypeCode.ToString(), Code.ToString()
+    protected override string BuildSequence()
+        => SequenceBuilder.BuildEscapeSequence([
+            ((int)Layer).ToString(), EscapeCodes.Color256TypeCode.ToString(), Code!.ToString()
         ], false);
-    }
-
+    
 
     public static implicit operator Color256Element(byte code) => new(code);
 }
@@ -75,28 +64,23 @@ public class Color256Element(byte? code = null, ColorLayer layer = ColorLayer.Fo
 /// </summary>
 /// <param name="color"> The RGB color. </param>
 /// <param name="layer"> The layer of the element. </param>
-public class ColorRGBElement(ColorRGB? color = null, ColorLayer layer = ColorLayer.Foreground) : IANSISequenceElement
+public class ColorRGBElement(ColorRGB? color = null, ColorLayer layer = ColorLayer.Foreground) : SequenceElement
 {
     public ColorRGB? Color { get; set; } = color;
     public ColorLayer Layer { get; set; } = layer;
 
 
-    public bool IsValid() => Color is not null;
+    public override bool IsValid() => Color is not null;
 
-    public string BuildSequence()
+    protected override string BuildSequence()
     {
-        if (!IsValid())
-            return string.Empty;
-
-        int layerCode = (int)Layer;
-
-        var validColor = Color ?? new ColorRGB();
+        ColorRGB validColor = Color!.Value;
 
         if (!validColor.AreAllChannelsNull())
             validColor.SetValueToNullChannels(0);
 
-        return SequenceBuilder.BuildANSIEscapeSequence([
-            layerCode.ToString(), EscapeCodes.ColorRGBTypeCode.ToString(),
+        return SequenceBuilder.BuildEscapeSequence([
+            ((int)Layer).ToString(), EscapeCodes.ColorRGBTypeCode.ToString(),
             validColor.Red?.ToString(), validColor.Green?.ToString(), validColor.Blue?.ToString()
         ], false);
     }

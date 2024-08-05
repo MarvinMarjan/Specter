@@ -78,7 +78,7 @@ public class SectionComponent : Component
     }
 
 
-    protected void DrawAt(ref StringBuilder builder, uint row, uint col)
+    protected void DrawAt(ref StringBuilder builder, int row, int col)
     {
         // draws the border
         if (DrawBorder && Bounds.IsAtBorder(new Point(row, col) + Position, out Bounds.Edge edges))
@@ -99,15 +99,15 @@ public class SectionComponent : Component
     {
         StringBuilder builder = new();
 
-        builder.Append(ControlCodes.CursorTo(RelativePosition.Row, RelativePosition.Col));
+        builder.Append(ControlCodes.CursorTo(RelativePosition.Row, RelativePosition.Column));
         builder.Append(Color.Value.AsSequence());
 
         for (int i = 0; i < Size.Value.Height; i++)
         {
             for (int o = 0; o < Size.Value.Width; o++)
-                DrawAt(ref builder, (uint)i, (uint)o);
+                DrawAt(ref builder, i, o);
 
-            builder.Append(ControlCodes.CursorDown(1) + ControlCodes.CursorToColumn(RelativePosition.Col));
+            builder.Append(ControlCodes.CursorDown(1) + ControlCodes.CursorToColumn(RelativePosition.Column));
         }
 
         builder.Append(EscapeCodes.Reset);

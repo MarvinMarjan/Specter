@@ -16,6 +16,8 @@ public class ComponentPropertyManagerRequirement(bool inherit, bool canBeInherit
     public bool CanBeInherited { get; set; } = canBeInherited;
 }
 
+// TODO: try to find a better way of doing what this class does ^
+
 
 /// <summary>
 /// Manages component properties.

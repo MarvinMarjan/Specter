@@ -30,7 +30,7 @@ public class LogicCondition(LogicCondition.LogicOperation operation, params IRul
         LogicOperation.And => Conditions.All(condition => condition.IsTrue(token)),
         LogicOperation.Or => Conditions.Any(condition => condition.IsTrue(token)),
 
-        _ => false
+        _ => throw new InvalidOperationException(@"Invalid ""LogicOperation"" value.")
     };
 }
 

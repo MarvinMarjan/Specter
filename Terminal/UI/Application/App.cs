@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text;
+using System.Collections.Generic;
 
 using Specter.Terminal.Output;
 using Specter.Terminal.UI.Components;
@@ -32,6 +32,8 @@ public abstract class App
         get => s_current_app ?? throw new AppException("There's no current app.");
         set => s_current_app = value;
     }
+
+    public static bool HasCurrentApp => s_current_app is not null;
 
 
 
@@ -84,7 +86,7 @@ public abstract class App
     {
         TerminalAttributes.Update();
 
-        Root?.Update();
+        Root.Update();
     }
 
     /// <summary>
@@ -129,8 +131,6 @@ public abstract class App
                 Update();
                 Draw();
             }
-
-            End();
         }
 
         finally
@@ -145,7 +145,21 @@ public abstract class App
 
 
 
-    public Component? TryGetComponentByName(string name)
+    public bool TryGetComponentByName(string name, out Component? component)
+    {
+        try
+        {
+            component = GetComponentByName(name);
+            return true;
+        }
+        catch
+        {
+            component = null;
+            return false;
+        }
+    }
+
+    public Component GetComponentByName(string name)
     {
         Component? component = null;
 
@@ -155,12 +169,11 @@ public abstract class App
                 component = child;
         });
 
+        if (component is null)
+            throw new ComponentException(name, "The Component couldn't be found.");
+
         return component;
     }
-
-    public Component GetComponentByName(string name)
-        => TryGetComponentByName(name)
-            ?? throw new ComponentException(name, "The Component couldn't be found.");
 
 
 

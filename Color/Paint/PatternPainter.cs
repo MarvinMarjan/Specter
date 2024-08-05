@@ -10,33 +10,30 @@ namespace Specter.Color.Paint;
 /// A Painter for ColorPatterns.
 /// </summary>
 /// <param name="pattern"> The pattern to be used. </param>
-public class PatternPainter(ColorPattern? pattern = null) : Painter
+public class PatternPainter(ColorPattern pattern) : Painter
 {
-    public ColorPattern? Pattern { get; set; } = pattern;
-    public ColorPattern ValidPattern => Pattern ?? new ColorPattern();
-    public List<ColorPattern.Color> Colors => ValidPattern.Colors;
-    public ColorPattern.Color CurrentColor => Colors[(int)_colorIndex];
+    public ColorPattern Pattern { get; set; } = pattern;
+    public List<ColorPattern.Color> Colors => Pattern.Colors;
+    
+    private ColorPattern.Color CurrentColor => Colors[_colorIndex];
 
 
-    private uint _charIndex;
-    private uint _colorIndex;
-    private uint _currentLength;
+    private int _charIndex;
+    private int _colorIndex;
+    private int _currentLength;
 
 
     // Restart color index when it reaches the colors size.
     private void ResetColorIndex()
     {
-        if (ValidPattern.ResetMode == ResetMode.Revert)
+        if (Pattern.ResetMode == ResetMode.Revert)
             Colors.Reverse();
 
         _colorIndex = 0;
     }
 
     private bool ShouldIgnore(char ch)
-        => CurrentColor.length == 0 || ValidPattern.IgnoreChars.Contains(ch);
-
-    private bool ColorLengthReached()
-        => _currentLength++ >= CurrentColor.length;
+        => CurrentColor.Length == 0 || Pattern.IgnoreChars.Contains(ch);
 
     private void NextColor()
     {
@@ -47,9 +44,6 @@ public class PatternPainter(ColorPattern? pattern = null) : Painter
 
     public override string Paint(string source)
     {
-        if (Pattern is null)
-            return string.Empty;
-
         StringBuilder builder = new();
         _currentLength = 1;
 
@@ -58,19 +52,21 @@ public class PatternPainter(ColorPattern? pattern = null) : Painter
             if (_colorIndex >= Colors.Count)
                 ResetColorIndex();
 
-            char ch = source[(int)_charIndex];
+            char ch = source[_charIndex];
 
             if (ShouldIgnore(ch))
-            {
                 builder.Append(ch);
-                continue;
+            
+            else
+            {
+                // appends the painted character
+                builder.Append(CurrentColor.ColorObject.AsSequence() + ch);
+
+                // TODO: set _currentLength to 0 and test it with ++_currentLength
+
+                if (_currentLength++ >= CurrentColor.Length)
+                    NextColor();
             }
-
-            // appends the painted character
-            builder.Append(CurrentColor.obj.AsSequence() + ch);
-
-            if (ColorLengthReached())
-                NextColor();
         }
 
         builder.Append(SequenceFinisher);

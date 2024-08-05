@@ -48,14 +48,14 @@ public class TextComponent : Component, IChildLess
 
 
     /// <returns> A Size object based on Text. </returns>
-    protected Size SizeFromText() => new((uint)Text.Value.Length, 1);
+    protected Size SizeFromText() => new(Text.Value.Length, 1);
 
 
     public override string Draw()
     {
         StringBuilder builder = new();
 
-        builder.Append(ControlCodes.CursorTo(RelativePosition.Row, RelativePosition.Col));
+        builder.Append(ControlCodes.CursorTo(RelativePosition.Row, RelativePosition.Column));
         builder.Append(Color.Value.AsSequence());
 
         builder.Append(Text);

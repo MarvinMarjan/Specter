@@ -54,20 +54,14 @@ public class ConditionalRule(ColorObject color, IRuleCondition? condition)
 /// <param name="color"> The color to paint. </param>
 /// <param name="sources"> The sources to check equality. </param>
 /// <param name="equal"> Whether it should equal o not ('==' or '!='). </param>
-public class EqualityRule(
-
-    ColorObject color,
-    TokenTarget[] sources,
-    IRuleCondition? condition = null,
-    bool equal = true
-
-) : PaintRule(color)
+public class EqualityRule(ColorObject color, TokenTarget[] sources, IRuleCondition? condition = null, bool equal = true)
+    : PaintRule(color)
 {
     public TokenTarget[] Sources { get; set; } = sources;
     public IRuleCondition? Condition { get; set; } = condition;
     public bool Equal { get; set; } = equal;
 
-    public int? ExtraPaintLength { get; set; }
+    public int ExtraPaintLength { get; set; } = 0;
 
 
     public override bool Match(ref PaintingState state, Token token)
@@ -77,21 +71,20 @@ public class EqualityRule(
 
         bool ConditionIsTrue = Condition?.IsTrue(token) ?? true;
 
-        foreach (TokenTarget set in Sources)
+        foreach (TokenTarget target in Sources)
         {
-            if (!set.Match(token) || !ConditionIsTrue)
+            if (!ConditionIsTrue || !target.Match(token))
                 continue;
 
-            paintLength = set.Set.Length;
+            paintLength = target.Set.Length;
             matched = true;
-
             break;
         }
 
         if (matched)
         {
             state.Color = Color;
-            state.PaintLength = paintLength + (ExtraPaintLength ?? 0);
+            state.PaintLength = paintLength + ExtraPaintLength;
         }
 
         return matched;

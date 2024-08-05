@@ -1,4 +1,6 @@
-﻿using Specter.Color;
+﻿using System;
+
+using Specter.Color;
 using Specter.Color.Paint;
 
 
@@ -29,11 +31,7 @@ public class Cursor(ColorObject? color = null)
 
     public void CursorPreviousWord()
     {
-        if (Stream is null)
-        {
-            CursorToLeft();
-            return;
-        }
+        ThrowIfStreamIsNull();
 
         do
             CursorToLeft();
@@ -43,11 +41,7 @@ public class Cursor(ColorObject? color = null)
 
     public void CursorNextWord()
     {
-        if (Stream is null)
-        {
-            CursorToRight();
-            return;
-        }
+        ThrowIfStreamIsNull();
 
         do
             CursorToRight();
@@ -109,4 +103,12 @@ public class Cursor(ColorObject? color = null)
     /// <returns> A string with the cursor drawed at the character. </returns>
     public string DrawTo(char ch, ColorObject? endColor = null)
         => DrawTo(ch.ToString(), 0, endColor);
+
+
+
+    private void ThrowIfStreamIsNull()
+    {
+        if (Stream is null)
+            throw new InvalidOperationException(@"Invalid ""InputStream"".");
+    }
 }

@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Text;
+﻿using System.Text;
+using System.Collections.Generic;
 
 using Specter.Terminal.Input;
 
@@ -38,6 +38,8 @@ public partial class RulePainter(List<PaintRule> rules) : Painter
         StringBuilder builder = new();
         bool cursorDrawed = false;
 
+        State.FullReset();
+
         foreach (Token token in tokens)
         {
             foreach (PaintRule rule in Rules)
@@ -56,8 +58,6 @@ public partial class RulePainter(List<PaintRule> rules) : Painter
 
         if (!cursorDrawed)
             builder.Append(Cursor?.GetCursorAtEnd() ?? "");
-
-        State.FullReset();
 
         return builder.ToString();
     }

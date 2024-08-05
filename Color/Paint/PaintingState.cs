@@ -10,10 +10,10 @@ public struct PaintingState(ColorObject color)
     public int PaintLength { get; set; }
     public int DefaultPaintLength { get; set; } = 1;
     public int PaintCounter { get; private set; } = 0;
-    private bool _countingPaint = false;
+    public bool PaintCounterIsCounting { get; private set; } = false;
 
     public readonly bool ShouldIgnoreRuleMatching =>
-        PaintUntilToken is not null || _countingPaint;
+        PaintUntilToken is not null || PaintCounterIsCounting;
 
     public bool IgnoreCurrentToken { get; set; } = false;
 
@@ -26,20 +26,19 @@ public struct PaintingState(ColorObject color)
             return;
         }
 
-        // PaintUntilToken is not null
-        if (PaintUntilToken is TokenTarget validTokenSet)
+        if (PaintUntilToken is not null)
         {
-            if (!validTokenSet.Match(currentToken))
+            if (!PaintUntilToken.Value.Match(currentToken))
                 return;
 
-            PaintLength = validTokenSet.Set.Length;
+            PaintLength = PaintUntilToken.Value.Set.Length;
         }
 
         PaintUntilToken = null;
 
         if (++PaintCounter < PaintLength)
         {
-            _countingPaint = true;
+            PaintCounterIsCounting = true;
             return;
         }
 
@@ -56,7 +55,7 @@ public struct PaintingState(ColorObject color)
 
     private void ResetState()
     {
-        _countingPaint = false;
+        PaintCounterIsCounting = false;
         PaintCounter = 0;
         PaintLength = DefaultPaintLength;
 

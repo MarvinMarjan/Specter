@@ -7,18 +7,18 @@ namespace Specter.ANSI;
 
 
 /// <summary>
-/// Interface for representing a ANSI sequence element.
+/// Interface for representing a sequence element.
 /// At the sequence "\x1b[0;31;45m", the numbers "0", "31" and "45" are
 /// elements.
 /// </summary>
-public interface IANSISequenceElement
+public abstract class SequenceElement
 {
     /// <summary>
     /// Checks whether a sequence element is valid or not.
     /// </summary>
     /// <param name="element"> The element to check. </param>
     /// <returns> True if it's valid, false otherwise. </returns>
-    public static bool IsValid(IANSISequenceElement? element)
+    public static bool IsValid(SequenceElement? element)
         => element is not null && element.IsValid();
 
 
@@ -26,14 +26,23 @@ public interface IANSISequenceElement
     /// Checks whether the current object is valid or not.
     /// </summary>
     /// <returns> True if it's valid, false otherwise </returns>
-    public bool IsValid();
+    public abstract bool IsValid();
 
+
+    // ! Calling this method when IsValid() is false may result in a exception.
+    protected abstract string BuildSequence();
 
     /// <summary>
     /// Builds the sequence as a string.
     /// </summary>
     /// <returns> A string containing the sequence. </returns>
-    public string BuildSequence();
+    public string BuildSequenceIfValid()
+    {
+        if (!IsValid())
+            return string.Empty;
+
+        return BuildSequence();
+    }
 }
 
 
@@ -60,8 +69,7 @@ public static class SequenceBuilder
     /// </summary>
     /// <param name="codes"> The array containing the codes. </param>
     /// <param name="useEscapeCode"> Should use escape codes in the string? </param>
-    /// <returns></returns>
-    public static string BuildANSIEscapeSequence(string?[] codes, bool useEscapeCode = true)
+    public static string BuildEscapeSequence(string?[] codes, bool useEscapeCode = true)
     {
         StringBuilder builder = new();
 

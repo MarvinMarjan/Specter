@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 
@@ -33,12 +34,31 @@ public struct ColorPattern(List<ColorPattern.Color> colors)
     /// <summary>
     /// Stores useful data with the ColorObject.
     /// </summary>
-    /// <param name="obj"> The ColorObject. </param>
+    /// <param name="colorObject"> The ColorObject. </param>
     /// <param name="length"> The length of the pattern. </param>
-    public struct Color(ColorObject obj, uint length)
+    public struct Color
     {
-        public ColorObject obj = obj;
-        public uint length = length;
+        public ColorObject ColorObject { get; set; }
+        
+        private int _length;
+        public int Length
+        {
+            readonly get => _length;
+            set
+            {
+                if (value >= 0)
+                    _length = value;
+                else
+                    throw new ArgumentOutOfRangeException(nameof(value), @"""Length"" should be a positive value.");
+            }
+        }
+
+
+        public Color(ColorObject color, int length)
+        {
+            ColorObject = color;
+            Length = length;
+        }
     }
 
 
@@ -52,15 +72,12 @@ public struct ColorPattern(List<ColorPattern.Color> colors)
     /// </summary>
     public char[] IgnoreChars { get; set; } = [' '];
 
-    /// <summary>
-    /// The reset mode.
-    /// </summary>
     public ResetMode ResetMode { get; set; } = ResetMode.FromBeginning;
 
 
     /// <param name="colors"> The ColorPattern.Color list. </param>
     /// <param name="colorLength"> The length to use for all the colors. </param>
-    public ColorPattern(List<ColorObject> colors, uint colorLength = 1)
+    public ColorPattern(List<ColorObject> colors, int colorLength = 1)
         : this([])
     {
         Colors = (from color in colors select new Color(color, colorLength)).ToList();

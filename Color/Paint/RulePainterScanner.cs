@@ -58,7 +58,7 @@ public class RulePainterScanner
 
 
     private void AddToken()
-        => AddToken(_source[_start.._end]);
+        => AddToken(_source[_start .. _end]);
 
     private void AddToken(string lexeme)
     {

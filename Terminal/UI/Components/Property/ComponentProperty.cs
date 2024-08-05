@@ -30,6 +30,8 @@ public readonly struct ComponentPropertyData(string name, string? typeName, Comp
 }
 
 
+// TODO: really man, try to improve the property system, it sucks.
+
 
 /// <summary>
 /// The base class of every other ComponentProperty.
@@ -77,13 +79,7 @@ public abstract class ComponentProperty
     }
 
 
-    public ComponentProperty(
-
-        Component owner,
-        string name,
-        ComponentPropertyAttributes attributes
-
-    )
+    public ComponentProperty(Component owner, string name, ComponentPropertyAttributes attributes)
     {
         _attributes = attributes; // * initialize Attributes before 'Manager.Add()'.
 
@@ -173,14 +169,8 @@ public class ComponentProperty<T>
     }
 
 
-    public ComponentProperty(
-
-        Component owner,
-        string name,
-        ComponentProperty<T> link,
-        ComponentPropertyAttributes attributes
-
-    ) : this(owner, name, link.Value, attributes)
+    public ComponentProperty(Component owner, string name, ComponentProperty<T> link, ComponentPropertyAttributes attributes)
+        : this(owner, name, link.Value, attributes)
     {
         LinkProperty = link;
         UseLink = true;

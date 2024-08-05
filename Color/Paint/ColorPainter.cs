@@ -5,16 +5,11 @@ namespace Specter.Color.Paint;
 /// A Painter for ColorObjects.
 /// </summary>
 /// <param name="color"> The ColorObject to use. </param>
-public class ColorPainter(ColorObject? color = null) : Painter
+public class ColorPainter(ColorObject color) : Painter
 {
-    public ColorObject? Color { get; set; } = color;
+    public ColorObject Color { get; set; } = color;
 
 
     public override string Paint(string source)
-    {
-        if (Color is null)
-            return string.Empty;
-
-        return Color.AsSequence() + source + SequenceFinisher;
-    }
+        => Color.AsSequence() + source + SequenceFinisher;
 }

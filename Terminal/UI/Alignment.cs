@@ -39,14 +39,14 @@ public enum Alignment
 
 public static class AlignmentExtensions
 {
-    private static uint CalculateCentralizedValue(uint parent, uint child)
+    private static int CalculateCentralizedValue(int parent, int child)
     {
-        double diff = Math.Abs((int)parent - (int)child);
+        double diff = Math.Abs(parent - child);
         double position = diff / 2.0;
 
         bool hasRemainder = diff % 2 != 0;
 
-        return (uint)(hasRemainder ? position + 1 : position);
+        return (int)(hasRemainder ? position + 1 : position);
     }
 
 
@@ -68,7 +68,7 @@ public static class AlignmentExtensions
         bool hasCenterV = alignment.HasFlag(Alignment.CenterVertical);
 
         if (hasCenterH)
-            finalPosition.Col = CalculateCentralizedValue(parent.Size.Width, child.Size.Width);
+            finalPosition.Column = CalculateCentralizedValue(parent.Size.Width, child.Size.Width);
 
         if (hasCenterV)
             finalPosition.Row = CalculateCentralizedValue(parent.Size.Height, child.Size.Height);
@@ -87,10 +87,10 @@ public static class AlignmentExtensions
         if (!hasCenterH)
         {
             if (alignment.HasFlag(Alignment.Left))
-                finalPosition.Col = 0;
+                finalPosition.Column = 0;
 
             else if (alignment.HasFlag(Alignment.Right))
-                finalPosition.Col = parent.Size.Width - finalSize.Width;
+                finalPosition.Column = parent.Size.Width - finalSize.Width;
         }
 
 
