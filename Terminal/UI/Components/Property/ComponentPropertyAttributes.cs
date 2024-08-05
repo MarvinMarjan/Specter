@@ -1,32 +1,23 @@
 namespace Specter.Terminal.UI.Components.Property;
 
 
-public class ComponentPropertyAttributes(
-    bool updateOnChange = false, bool requestOwnerRenderOnPropertyChange = false, bool drawAllRequest = false,
-    bool ignoreManagerRequirement = false
-)
+public class ComponentPropertyAttributes
 {
     /// <summary>
     /// Should DefaultValue be setted immediately to Value when
     /// it changes?
     /// </summary>
-    public bool UpdateOnChange { get; set; } = updateOnChange;
+    public bool UpdateOnChange { get; set; } = false;
 
-    public bool RequestOwnerRenderOnPropertyChange { get; set; } = requestOwnerRenderOnPropertyChange;
-    public bool DrawAllRequest { get; set; } = drawAllRequest;
+    public bool RequestOwnerRenderOnPropertyChange { get; set; } = false;
+    public bool DrawAllRequest { get; set; } = false;
 
-    public bool IgnoreManagerRequirement { get; set; } = ignoreManagerRequirement;
+    public bool IgnoreManagerRequirement { get; set; } = false;
 }
 
 
-public class InheritableComponentPropertyAttributes(
-    bool updateOnChange = false, bool requestOwnerRenderOnPropertyChange = false, bool drawAllRequest = false,
-    bool ignoreManagerRequirement = false, bool inherit = true, bool canBeInherited = true
-
-) : ComponentPropertyAttributes(
-    updateOnChange, requestOwnerRenderOnPropertyChange, drawAllRequest, ignoreManagerRequirement
-)
+public class InheritableComponentPropertyAttributes : ComponentPropertyAttributes
 {
-    public bool Inherit { get; set; } = inherit;
-    public bool CanBeInherited { get; set; } = canBeInherited;
+    public bool Inherit { get; set; } = true;
+    public bool CanBeInherited { get; set; } = true;
 }

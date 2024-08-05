@@ -38,11 +38,11 @@ public class TextComponent : Component, IChildLess
         Text = new(
             this, "Text", text,
 
-            new(
-                updateOnChange: true,
-                requestOwnerRenderOnPropertyChange: true,
-                drawAllRequest: true
-            )
+            new InheritableComponentPropertyAttributes {
+                UpdateOnChange = true,
+                RequestOwnerRenderOnPropertyChange = true,
+                DrawAllRequest = true
+            }
         );
     }
 

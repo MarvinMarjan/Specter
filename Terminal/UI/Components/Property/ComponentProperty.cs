@@ -1,25 +1,9 @@
+using System;
 using Specter.Terminal.UI.Application;
 using Specter.Terminal.UI.Application.Exceptions;
 
 
 namespace Specter.Terminal.UI.Components.Property;
-
-
-public interface IComponentPropertyEvents<T>
-{
-    delegate void ValueChangedEventHandler(T newValue);
-
-    event ValueChangedEventHandler? PropertyValueChanged;
-}
-
-
-public interface IComponentPropertyEvents
-{
-    delegate void ValueChangedEventHandler(object newValue);
-
-    event ValueChangedEventHandler? PropertyValueChanged;
-}
-
 
 
 public readonly struct ComponentPropertyData(string name, string? typeName, Component? owner)
@@ -43,7 +27,7 @@ public abstract class ComponentProperty
     /// </summary>
     public Component Owner { get; set; }
     public ComponentPropertiesManager Manager => Owner.PropertiesManager;
-    public bool HasManager => Manager is not null;
+
 
     /// <summary>
     /// Name of the property.
@@ -79,6 +63,14 @@ public abstract class ComponentProperty
     }
 
 
+    public event EventHandler? ValueChanged;
+
+
+    protected virtual void OnValueChanged()
+        => ValueChanged?.Invoke(this, EventArgs.Empty);
+
+
+
     public ComponentProperty(Component owner, string name, ComponentPropertyAttributes attributes)
     {
         _attributes = attributes; // * initialize Attributes before 'Manager.Add()'.
@@ -100,9 +92,8 @@ public abstract class ComponentProperty
 /// A generic ComponentProperty with extended behaviour. 
 /// </summary>
 /// <typeparam name="T"> The property value type. </typeparam>
-public class ComponentProperty<T>
-    : ComponentProperty, IComponentPropertyEvents<T>, IComponentPropertyEvents, IUpdateable
-        where T : notnull
+public class ComponentProperty<T> : ComponentProperty, IUpdateable
+    where T : notnull
 {
     public override object ValueObject => Value;
 
@@ -118,7 +109,7 @@ public class ComponentProperty<T>
         protected set
         {
             _value = value;
-            RaiseValueChangedEvent(value);
+            OnValueChanged();
         }
     }
 
@@ -148,24 +139,29 @@ public class ComponentProperty<T>
     /// copy the value. Has a simillar behaviour to DefaultValue.
     /// </summary>
     public ComponentProperty<T>? LinkProperty { get; set; }
-    public bool UseLink { get; set; }
+    public bool UseLink { get; set; } = false;
 
 
-    public ComponentProperty(
 
-        Component owner,
-        string name,
-        T value,
-        ComponentPropertyAttributes attributes
+    protected override void OnValueChanged()
+    {
+        base.OnValueChanged();
 
-    ) : base(owner, name, attributes)
+        if (!Attributes.RequestOwnerRenderOnPropertyChange)
+            return;
+
+        if (Attributes.DrawAllRequest)
+            App.RequestDrawAll();
+        else
+            Owner.AddThisToRenderQueue();
+    }
+
+
+
+    public ComponentProperty(Component owner, string name, T value, ComponentPropertyAttributes attributes)
+        : base(owner, name, attributes)
     {
         _value = _defaultValue = value;
-
-        UseLink = false;
-
-        PropertyValueChanged += OnPropertyValueChange;
-        PropertyObjectValueChanged += OnPropertyObjectValueChange;
     }
 
 
@@ -198,47 +194,6 @@ public class ComponentProperty<T>
 
 
     public static implicit operator T(ComponentProperty<T> property) => property.Value;
-
-
-    // Events
-
-    public event IComponentPropertyEvents<T>.ValueChangedEventHandler? PropertyValueChanged;
-    event IComponentPropertyEvents<T>.ValueChangedEventHandler? IComponentPropertyEvents<T>.PropertyValueChanged
-    {
-        add => PropertyValueChanged += value;
-        remove => PropertyValueChanged -= value;
-    }
-
-
-    public event IComponentPropertyEvents.ValueChangedEventHandler? PropertyObjectValueChanged;
-    event IComponentPropertyEvents.ValueChangedEventHandler? IComponentPropertyEvents.PropertyValueChanged
-    {
-        add => PropertyObjectValueChanged += value;
-        remove => PropertyObjectValueChanged -= value;
-    }
-
-
-    protected void RaiseValueChangedEvent(T newValue)
-    {
-        PropertyValueChanged?.Invoke(newValue);
-        PropertyObjectValueChanged?.Invoke(newValue);
-    }
-
-
-    protected virtual void OnPropertyValueChange(T newValue)
-    {
-        if (!Attributes.RequestOwnerRenderOnPropertyChange)
-            return;
-
-        if (Attributes.DrawAllRequest)
-            App.RequestDrawAll();
-        else
-            Owner.AddThisToRenderQueue();
-    }
-
-    protected virtual void OnPropertyObjectValueChange(object newValue) { }
-
-
 
 
     public virtual void Update()
@@ -301,6 +256,7 @@ public class InheritableComponentProperty<T> : ComponentProperty<T>, IInheritabl
     }
 
 
+
     public InheritableComponentProperty(
 
         Component owner,
@@ -321,8 +277,7 @@ public class InheritableComponentProperty<T> : ComponentProperty<T>, IInheritabl
         if (CanInherit())
             Value = ParentAsProperty.Value;
 
-        ParentAsProperty.PropertyValueChanged += OnParentPropertyValueChange;
-        ParentAsProperty.PropertyObjectValueChanged += OnParentPropertyObjectValueChange;
+        ParentAsProperty.ValueChanged += delegate { TryInheritValue(); };
     }
 
     public InheritableComponentProperty(
@@ -371,9 +326,6 @@ public class InheritableComponentProperty<T> : ComponentProperty<T>, IInheritabl
 
     public static implicit operator T(InheritableComponentProperty<T> property) => property.Value;
 
-
-    public virtual void OnParentPropertyValueChange(T newValue) => TryInheritValue();
-    public virtual void OnParentPropertyObjectValueChange(object newValue) { }
 
     public override void Update()
     {

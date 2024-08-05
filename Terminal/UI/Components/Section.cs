@@ -48,14 +48,14 @@ public class SectionComponent : Component
             this, "BorderCharacters", borderCharacters ?? UI.BorderCharacters.Default,
             Parent?.As<SectionComponent>()?.BorderCharacters,
 
-            new(requestOwnerRenderOnPropertyChange: true)
+            new InheritableComponentPropertyAttributes { RequestOwnerRenderOnPropertyChange = true }
         );
 
         BorderColor = new(
             this, "BorderColor", borderColor ?? Color,
             Parent?.As<SectionComponent>()?.BorderColor,
 
-            new(requestOwnerRenderOnPropertyChange: true)
+            new InheritableComponentPropertyAttributes { RequestOwnerRenderOnPropertyChange = true }
         )
         {
             LinkProperty = Color,
@@ -66,14 +66,14 @@ public class SectionComponent : Component
             this, "DrawBorder", drawBorder,
             Parent?.As<SectionComponent>()?.DrawBorder,
 
-            new(requestOwnerRenderOnPropertyChange: true)
+            new InheritableComponentPropertyAttributes { RequestOwnerRenderOnPropertyChange = true }
         );
 
         BackgroundFill = new(
             this, "BackgroundFill", backgroundFill,
             Parent?.As<SectionComponent>()?.BackgroundFill,
 
-            new(requestOwnerRenderOnPropertyChange: true)
+            new InheritableComponentPropertyAttributes { RequestOwnerRenderOnPropertyChange = true }
         );
     }
 
