@@ -40,10 +40,10 @@ public abstract class App
     /// <summary>
     /// Queue containing the Components that are going to be drawed/rendered.
     /// </summary>
-    public static List<Component> RenderQueue { get; private set; } = [];
+    public List<Component> RenderQueue { get; private set; } = [];
 
 
-    public static bool DrawAllRequested { get; private set; } = false;
+    public bool DrawAllRequested { get; private set; } = false;
 
 
     public App()
@@ -54,6 +54,8 @@ public abstract class App
 
         // on CTRL+C pressed
         Console.CancelKeyPress += delegate { OnExit(); };
+
+        SetThisAsCurrentApp();
 
         Exit = false;
         Root = new();
@@ -181,7 +183,7 @@ public abstract class App
 
 
 
-    public static void AddComponentToRenderQueue(Component component)
+    public void AddComponentToRenderQueue(Component component)
     {
         if (!RenderQueue.Contains(component))
             RenderQueue.Add(component);
@@ -189,7 +191,7 @@ public abstract class App
 
 
 
-    private static void DrawRenderQueue()
+    private void DrawRenderQueue()
     {
         foreach (Component component in RenderQueue)
             Console.Write(component.Draw());
@@ -198,14 +200,14 @@ public abstract class App
     }
 
 
-    public static void RequestDrawAll() => DrawAllRequested = true;
+    public void RequestDrawAll() => DrawAllRequested = true;
 
     private void DrawAll(bool clearRenderQueue = false)
     {
         Console.Write(Root.Draw());
 
         if (clearRenderQueue)
-            RenderQueue.Clear();
+            CurrentApp.RenderQueue.Clear();
     }
 
 

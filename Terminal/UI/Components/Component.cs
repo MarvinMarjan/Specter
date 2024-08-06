@@ -73,23 +73,7 @@ public abstract class Component : IUpdateable, IDrawable
 
 
 
-    public Component(
-        string name,
-
-        Component? parent,
-        Point? position = null,
-        Size? size = null,
-
-        // * If alignment != Alignment.None (and null), Position is ignored and Alignment is used to define the
-        // * Component position
-        Alignment? alignment = null,
-
-        ColorObject? color = null,
-
-        bool inheritProperties = true
-
-
-    )
+    public Component(string name, Component? parent, Point position, Size size)
     {
         Name = name;
 
@@ -97,46 +81,31 @@ public abstract class Component : IUpdateable, IDrawable
         ChildLessParentCheck(); // checks if Parent is a IChildLess
 
         Childs = [];
-        PropertiesManager = new(this, new(inheritProperties, true));
+        PropertiesManager = new(this);
 
-        Position = new(
-            this, "Position", position ?? Point.None,
 
-            new ComponentPropertyAttributes {
-                UpdateOnChange = true,
-                RequestOwnerRenderOnPropertyChange = true,
-                DrawAllRequest = true
-            }
-        );
+        Position = new(this, "Position", position)
+        {
+            RequestRenderOnValueChange = true,
+            DrawAllRequest = true
+        };
 
-        Size = new(
-            this, "Size", size ?? UI.Size.None,
+        Size = new(this, "Size", size)
+        {
+            RequestRenderOnValueChange = true,
+            DrawAllRequest = true
+        };
 
-            new ComponentPropertyAttributes {
-                UpdateOnChange = true,
-                RequestOwnerRenderOnPropertyChange = true,
-                DrawAllRequest = true
-            }
-        );
+        Alignment = new(this, "Alignment", UI.Alignment.None,Parent?.Alignment)
+        {
+            RequestRenderOnValueChange = true,
+            DrawAllRequest = true
+        };
 
-        Alignment = new(
-            this, "Alignment", alignment ?? UI.Alignment.None,
-            Parent?.Alignment,
-
-            new InheritableComponentPropertyAttributes {
-                RequestOwnerRenderOnPropertyChange = true,
-                DrawAllRequest = true
-            }
-        );
-
-        Color = new(
-            this, "Color", color ?? ColorObject.None,
-            Parent?.Color,
-
-            new InheritableComponentPropertyAttributes {
-                RequestOwnerRenderOnPropertyChange = true
-            }
-        );
+        Color = new(this, "Color", ColorObject.None, Parent?.Color)
+        {
+            RequestRenderOnValueChange = true
+        };
 
 
         if (Parent is null)
@@ -170,9 +139,9 @@ public abstract class Component : IUpdateable, IDrawable
     }
 
 
-    public static void ForeachChildIn(Component component, Action<Component> action, bool ignoreFirst = true)
+    public static void ForeachChildIn(Component component, Action<Component> action, bool ignoreParent = true)
     {
-        if (!ignoreFirst)
+        if (!ignoreParent)
             action(component);
 
         foreach (Component child in component.Childs)
@@ -204,11 +173,11 @@ public abstract class Component : IUpdateable, IDrawable
         // * do not add if there is already a parent in the queue, since
         // * drawing the parent also draws the child.
 
-        foreach (Component component in App.RenderQueue)
+        foreach (Component component in App.CurrentApp.RenderQueue)
             if (IsChildOf(component))
                 return;
 
-        App.AddComponentToRenderQueue(this);
+        App.CurrentApp.AddComponentToRenderQueue(this);
     }
 
 
@@ -226,11 +195,10 @@ public abstract class Component : IUpdateable, IDrawable
 
     public virtual void Update()
     {
-        foreach (IUpdateable property in PropertiesManager.GetAllPropertiesAs<IUpdateable>())
+        foreach (IUpdateable property in PropertiesManager.GetAllPropertiesOfType<IUpdateable>())
             property.Update();
 
-        Position.DefaultValue = Alignment.Value.CalculatePosition(this);
-        PropertiesManager.Update();
+        Position.Value = Alignment.Value.CalculatePosition(this);
 
         UpdateEvent?.Invoke();
 

@@ -1,7 +1,6 @@
 ﻿using System.Text;
 
 using Specter.ANSI;
-using Specter.Color;
 using Specter.Terminal.UI.Components.Property;
 
 
@@ -17,33 +16,14 @@ public class TextComponent : Component, IChildLess
     public ComponentProperty<string> Text { get; }
 
 
-    public TextComponent(
-        string name,
-
-        Component? parent,
-        Point? position = null,
-
-        Alignment? alignment = null,
-
-        ColorObject? color = null,
-
-        bool inheritProperties = false,
-
-        string text = ""
-
-
-    // * size is set in Update()
-    ) : base(name, parent, position, null, alignment, color, inheritProperties)
+    public TextComponent(string name, Component? parent, Point position, string text)
+        : base(name, parent, position, UI.Size.None)
     {
-        Text = new(
-            this, "Text", text,
-
-            new InheritableComponentPropertyAttributes {
-                UpdateOnChange = true,
-                RequestOwnerRenderOnPropertyChange = true,
-                DrawAllRequest = true
-            }
-        );
+        Text = new(this, "Text", text)
+        {
+            RequestRenderOnValueChange = true,
+            DrawAllRequest = true
+        };
     }
 
 
@@ -70,7 +50,7 @@ public class TextComponent : Component, IChildLess
 
     public override void Update()
     {
-        Size.DefaultValue = SizeFromText();
+        Size.Value = SizeFromText();
 
         base.Update();
     }

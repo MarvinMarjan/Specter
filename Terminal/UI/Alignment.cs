@@ -28,7 +28,7 @@ public enum Alignment
     TopCenter = Top | CenterHorizontal,
     BottomCenter = Bottom | CenterHorizontal,
     LeftCenter = Left | CenterVertical,
-    RightCenter = Right | CenterHorizontal,
+    RightCenter = Right | CenterVertical,
 
     TopLeft = Top | Left,
     TopRight = Top | Right,

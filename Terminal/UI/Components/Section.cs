@@ -27,54 +27,42 @@ public class SectionComponent : Component
         string name,
 
         Component? parent,
-        Point? position = null,
-        Size? size = null,
+        Point position,
+        Size size
 
-        Alignment? alignment = null,
-
-        ColorObject? color = null,
-
-        bool inheritProperties = true,
-
-        BorderCharacters? borderCharacters = null,
-        ColorObject? borderColor = null,
-        bool drawBorder = true,
-        char backgroundFill = ' '
-
-
-    ) : base(name, parent, position, size, alignment, color, inheritProperties)
+    ) : base(name, parent, position, size)
     {
         BorderCharacters = new(
-            this, "BorderCharacters", borderCharacters ?? UI.BorderCharacters.Default,
-            Parent?.As<SectionComponent>()?.BorderCharacters,
-
-            new InheritableComponentPropertyAttributes { RequestOwnerRenderOnPropertyChange = true }
-        );
-
-        BorderColor = new(
-            this, "BorderColor", borderColor ?? Color,
-            Parent?.As<SectionComponent>()?.BorderColor,
-
-            new InheritableComponentPropertyAttributes { RequestOwnerRenderOnPropertyChange = true }
+            this, "BorderCharacters", UI.BorderCharacters.Default,
+            Parent?.As<SectionComponent>()?.BorderCharacters
         )
         {
-            LinkProperty = Color,
-            UseLink = true // * if you want to set a different color to border, disable UseLink first.
+            RequestRenderOnValueChange = true
+        };
+
+        BorderColor = new(
+            this, "BorderColor", Color,
+            Parent?.As<SectionComponent>()?.BorderColor
+        )
+        {
+            RequestRenderOnValueChange = true
         };
 
         DrawBorder = new(
-            this, "DrawBorder", drawBorder,
-            Parent?.As<SectionComponent>()?.DrawBorder,
-
-            new InheritableComponentPropertyAttributes { RequestOwnerRenderOnPropertyChange = true }
-        );
+            this, "DrawBorder", true,
+            Parent?.As<SectionComponent>()?.DrawBorder
+        )
+        {
+            RequestRenderOnValueChange = true
+        };
 
         BackgroundFill = new(
-            this, "BackgroundFill", backgroundFill,
-            Parent?.As<SectionComponent>()?.BackgroundFill,
-
-            new InheritableComponentPropertyAttributes { RequestOwnerRenderOnPropertyChange = true }
-        );
+            this, "BackgroundFill", ' ',
+            Parent?.As<SectionComponent>()?.BackgroundFill
+        )
+        {
+            RequestRenderOnValueChange = true
+        };
     }
 
 
@@ -117,5 +105,11 @@ public class SectionComponent : Component
         builder.Append(base.Draw());
 
         return builder.ToString();
+    }
+
+
+    public override void Update()
+    {
+        base.Update();
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 using Specter.Terminal.UI.Application.Exceptions;
 
@@ -7,29 +8,12 @@ namespace Specter.Terminal.UI.Components.Property;
 
 
 /// <summary>
-/// Class that is utilized to set requirement values to ComponentProperties
-/// when they are added to a ComponentPropertyManager.
-/// </summary>
-public class ComponentPropertyManagerRequirement(bool inherit, bool canBeInherited)
-{
-    public bool Inherit { get; set; } = inherit;
-    public bool CanBeInherited { get; set; } = canBeInherited;
-}
-
-// TODO: try to find a better way of doing what this class does ^
-
-
-/// <summary>
 /// Manages component properties.
 /// </summary>
 /// <param name="owner"> The component that the manager will be a child of </param>
-/// <param name="requirement"> The initial requirements. </param>
-public class ComponentPropertiesManager(Component owner, ComponentPropertyManagerRequirement? requirement = null)
-    : IUpdateable
+public class ComponentPropertiesManager(Component owner)
 {
     public Component Owner { get; set; } = owner;
-
-    public ComponentPropertyManagerRequirement Requirement { get; set; } = requirement ?? new(true, true);
 
     private readonly List<ComponentProperty> _properties = [];
 
@@ -49,23 +33,15 @@ public class ComponentPropertiesManager(Component owner, ComponentPropertyManage
             );
 
         _properties.Add(property);
-
-        SetRequirementToProperty(property);
     }
 
 
 
-    /// <summary>
-    /// Gets a ComponentProperty in the manager as a specific type, if it exists.
-    /// </summary>
-    /// <param name="propertyName"> The name of the property. </param>
-    /// <returns> The property converted to the specified type. </returns>
-    /// <exception cref="ComponentPropertyException"> Exception thrown if it couldn't find the property. </exception>
-    public T GetPropertyAs<T>(string propertyName) where T : class
+    public ComponentProperty GetProperty(string propertyName)
     {
         foreach (ComponentProperty property in _properties)
-            if (property.Name == propertyName && property is T convertedProperty)
-                return convertedProperty;
+            if (property.Name == propertyName)
+                return property;
 
         throw new ComponentPropertyException(
             new(propertyName, null, null),
@@ -73,58 +49,71 @@ public class ComponentPropertiesManager(Component owner, ComponentPropertyManage
         );
     }
 
-    /// <summary>
-    /// Same as GetPropertyAs<T>, but it doesn't convert the property.
-    /// </summary>
-    public ComponentProperty GetProperty(string propertyName)
-        => GetPropertyAs<ComponentProperty>(propertyName);
-
-
-
-    /// <returns> An array containing all the properties converted to a specific type. </returns>
-    public T[] GetAllPropertiesAs<T>() where T : class
-        => _properties.ToArray().PropertiesAs<T>();
-
-    /// <summary>
-    /// Same as GetAllPropertiesAs<T>, but it doesn't convert the properties.
-    /// </summary>
-    public ComponentProperty[] GetAllProperties()
-        => GetAllPropertiesAs<ComponentProperty>();
-
-
-
-    /// <summary>
-    /// Applies this manager requirements to a specific property.
-    /// </summary>
-    /// <param name="property"> The property to apply the requirements. </param>
-    public void SetRequirementToProperty(ComponentProperty property)
+    public bool TryGetProperty(string propertyName, out ComponentProperty? property)
     {
-        if (property.Attributes.IgnoreManagerRequirement)
-            return;
-
-        if (property is IInheritable && property.Attributes is InheritableComponentPropertyAttributes attributes)
+        try
         {
-            attributes.Inherit = Requirement.Inherit;
-            attributes.CanBeInherited = Requirement.CanBeInherited;
+            property = GetProperty(propertyName);
+            return true;
+        }
+        catch
+        {
+            property = null;
+            return false;
         }
     }
 
-    /// <summary>
-    /// Applies this manager requirements to specific properties.
-    /// </summary>
-    /// <param name="properties"> The array of properties to apply the requirement. </param>
-    public void SetRequirementToProperties(ComponentProperty[] properties)
+
+    public T GetPropertyAs<T>(string propertyName) where T : class
     {
-        foreach (ComponentProperty property in properties)
-            SetRequirementToProperty(property);
+        ComponentProperty property = GetProperty(propertyName);
+
+        if (property is not T convertedProperty)
+            throw new ComponentPropertyException(property.GetData(), $@"Could not convert property to type ""{typeof(T).Name}"".");
+    
+        return convertedProperty;
     }
 
-    /// <summary>
-    /// Applies the requirements to the properties in this manager.
-    /// </summary>
-    public void SetRequirementToAllProperties() => SetRequirementToProperties([.. _properties]);
+    public bool TryGetPropertyAs<T>(string propertyName, out T? property) where T : class
+    {
+        try
+        {
+            property = GetPropertyAs<T>(propertyName);
+            return true;
+        }
+        catch
+        {
+            property = null;
+            return false;
+        }
+    }
+
+
+    public ComponentProperty[] GetAllProperties()
+        => [.. _properties];
+
+
+    public T[] GetAllPropertiesOfType<T>() where T : class
+        => GetAllProperties().PropertiesOfType<T>();
 
 
 
-    public virtual void Update() => SetRequirementToAllProperties();
+    public void ForeachProperty(Action<ComponentProperty> action)
+    {
+        foreach (ComponentProperty property in _properties)
+            action(property);
+    }
+
+    public void ForeachPropertyOfType<T>(Action<T> action) where T : class
+    {
+        foreach (T property in GetAllPropertiesOfType<T>())
+            action(property);
+    }
+
+
+    public void SetPropertiesInherit(bool value)
+        => ForeachPropertyOfType<IInheritable>(property => property.Inherit = value);
+
+    public void SetPropertiesCanBeInherited(bool value)
+        => ForeachPropertyOfType<IInheritable>(property => property.CanBeInherited = value);
 }
