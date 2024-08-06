@@ -45,7 +45,7 @@ public class PatternPainter(ColorPattern pattern) : Painter
     public override string Paint(string source)
     {
         StringBuilder builder = new();
-        _currentLength = 1;
+        _currentLength = 0;
 
         for (_charIndex = 0, _colorIndex = 0; _charIndex < source.Length; _charIndex++)
         {
@@ -62,9 +62,7 @@ public class PatternPainter(ColorPattern pattern) : Painter
                 // appends the painted character
                 builder.Append(CurrentColor.ColorObject.AsSequence() + ch);
 
-                // TODO: set _currentLength to 0 and test it with ++_currentLength
-
-                if (_currentLength++ >= CurrentColor.Length)
+                if (++_currentLength >= CurrentColor.Length)
                     NextColor();
             }
         }
